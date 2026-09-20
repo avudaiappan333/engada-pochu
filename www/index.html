@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050816">
+<title>Engada Pochu</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#050816; --card:#0F1330; --elev:#161B40;
+  --violet:#7C3AED; --violet-text:#A78BFA; --cyan:#00D4FF; --coral:#E07856;
+  --muted:#8A94B8; --line:rgba(124,58,237,.18); --text:#E8ECFF;
+  --r:20px;
+}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;
+  -webkit-font-smoothing:antialiased}
+body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;
+  background:radial-gradient(1200px 600px at 50% -10%,rgba(124,58,237,.18),transparent 60%),var(--bg)}
+.app{width:100%;max-width:480px;padding:22px 20px 56px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{margin:0;font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* header */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:2px 2px 0}
+.brand{font-size:19px;font-weight:700;letter-spacing:.2px}
+.brand span{color:var(--violet-text)}
+.today{font-size:12.5px;color:var(--muted);margin-top:3px;letter-spacing:.2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet);margin-top:8px}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card.flash{animation:flash .45s ease}
+@keyframes flash{0%{background:#1d2450;border-color:rgba(0,212,255,.55)}100%{background:var(--card);border-color:var(--line)}}
+
+/* summary */
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted)}
+.stat .num{font-size:26px;font-weight:700;margin-top:5px;letter-spacing:-.4px}
+.stat.balance{grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px;display:flex;align-items:baseline;justify-content:space-between}
+.stat.balance .num{font-size:34px;margin-top:0}
+.in{color:var(--cyan)} .out{color:var(--coral)} .bal-pos{color:var(--cyan)} .bal-neg{color:var(--coral)}
+
+/* mic */
+.miccard{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 18px 22px}
+.caption{font-size:14.5px;line-height:1.5;text-align:center;color:var(--text);min-height:22px;letter-spacing:.1px}
+.caption.muted{color:var(--muted)}
+.caption .hl{color:var(--violet-text);font-weight:600}
+.caption.answer{color:var(--cyan);font-weight:600}
+.heard{font-size:13px;color:var(--muted);min-height:16px;font-style:italic;text-align:center}
+.mic{width:112px;height:112px;border-radius:50%;border:none;cursor:pointer;
+  background:radial-gradient(circle at 32% 28%,#9B6BFF,var(--violet) 62%,#5B21B6);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  animation:breathe 2.4s ease-in-out infinite;transition:transform .15s ease}
+.mic:active{transform:scale(.96)}
+.mic svg{width:46px;height:46px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@keyframes breathe{
+  0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.42),0 0 30px rgba(124,58,237,.45)}
+  50%{box-shadow:0 0 0 16px rgba(124,58,237,0),0 0 48px rgba(124,58,237,.6)}}
+.mic.listening{background:radial-gradient(circle at 32% 28%,#7BE9FF,#00A3D4 62%,#0369A1);
+  animation:breatheCyan 1.15s ease-in-out infinite}
+@keyframes breatheCyan{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.5),0 0 34px rgba(0,212,255,.5)}
+  50%{box-shadow:0 0 0 20px rgba(0,212,255,0),0 0 60px rgba(0,212,255,.75)}}
+.mic.busy{opacity:.6}
+.hint{font-size:12px;color:var(--muted);letter-spacing:.3px}
+
+/* confirm card */
+.confirm{border-color:rgba(0,212,255,.34);background:#0C1730;display:none}
+.confirm.show{display:block;animation:slide .28s ease}
+@keyframes slide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.crow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 0}
+.crow label{font-size:11.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.crow input{background:var(--elev);border:1px solid var(--line);border-radius:10px;
+  color:var(--text);font:inherit;font-size:14.5px;padding:8px 11px;width:62%;text-align:right}
+.crow input:focus{outline:none;border-color:var(--violet)}
+.seg{display:flex;gap:6px}
+.seg button{background:var(--elev);border:1px solid var(--line);color:var(--muted);font:inherit;
+  font-size:12.5px;padding:7px 14px;border-radius:9px;cursor:pointer}
+.seg button.on[data-d="out"]{background:rgba(224,120,86,.16);border-color:var(--coral);color:var(--coral)}
+.seg button.on[data-d="in"]{background:rgba(0,212,255,.14);border-color:var(--cyan);color:var(--cyan)}
+.suggest{margin-top:6px;font-size:12.5px;color:var(--violet-text);display:none}
+.suggest button{background:none;border:none;color:var(--violet-text);font:inherit;text-decoration:underline;
+  cursor:pointer;padding:0 2px}
+.actions{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;border:none;border-radius:12px;padding:12px;font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
+.btn.p{background:var(--violet);color:#fff;box-shadow:0 6px 20px rgba(124,58,237,.35)}
+.btn.g{background:var(--elev);color:var(--muted);border:1px solid var(--line)}
+
+/* type row */
+.typerow{display:flex;gap:8px}
+.typerow input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);font:inherit;font-size:14px;padding:12px 14px}
+.typerow input:focus{outline:none;border-color:var(--violet)}
+.typerow button{background:var(--elev);border:1px solid var(--line);color:var(--violet-text);
+  border-radius:12px;font:inherit;font-size:13.5px;font-weight:600;padding:0 16px;cursor:pointer}
+
+/* list */
+.list{padding:16px 6px 8px}
+.listhead{display:flex;align-items:center;justify-content:space-between;padding:0 12px 12px}
+.listhead h2{font-size:14px;letter-spacing:.4px}
+.tools{display:flex;gap:7px}
+.chip{background:var(--elev);border:1px solid var(--line);color:var(--muted);font:inherit;font-size:11.5px;
+  letter-spacing:.4px;padding:6px 11px;border-radius:20px;cursor:pointer}
+.chip.on{color:var(--cyan);border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.08)}
+.filterbar{display:none;padding:0 12px 10px}
+.filterbar.show{display:flex;align-items:center;gap:8px}
+.fbadge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,.15);
+  border:1px solid rgba(124,58,237,.4);color:var(--violet-text);border-radius:20px;font-size:11.5px;padding:5px 10px}
+.fbadge b{font-weight:600}
+.fbadge span{cursor:pointer;opacity:.75;font-size:13px;line-height:1}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;transition:background .15s}
+.row:hover{background:rgba(124,58,237,.06)}
+.row .ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;flex:0 0 auto}
+.row.out .ico{background:rgba(224,120,86,.14);color:var(--coral)}
+.row.in .ico{background:rgba(0,212,255,.13);color:var(--cyan)}
+.row .mid{flex:1;min-width:0}
+.row .who{font-size:14.5px;font-weight:600;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.row .amt{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.out .amt{color:var(--coral)} .row.in .amt{color:var(--cyan)}
+.row .x{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;opacity:.4;padding:2px 4px}
+.row .x:hover{opacity:1;color:var(--coral)}
+.empty{text-align:center;color:var(--muted);font-size:13.5px;padding:26px 18px;line-height:1.6}
+.dim{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:12px 12px 4px}
+
+/* categories */
+.cats h2{font-size:14px;padding-bottom:14px;letter-spacing:.4px}
+.cats h2 span{color:var(--muted);font-weight:400;font-size:12px}
+.cat{margin-bottom:13px}
+.cat .topp{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.cat .topp b{font-weight:600} .cat .topp i{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:7px;border-radius:6px;background:var(--elev);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--violet),var(--cyan))}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--elev);
+  border:1px solid var(--line);color:var(--text);font-size:13px;padding:11px 20px;border-radius:30px;
+  opacity:0;pointer-events:none;transition:all .25s ease;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.3px;padding-top:2px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div>
+      <div class="brand">Engada <span>Pochu</span></div>
+      <div class="today" id="today"></div>
+    </div>
+    <div class="dot" id="dot"></div>
+  </div>
+
+  <section class="card summary" id="summaryCard">
+    <div class="stat"><div class="lbl">Total Sent</div><div class="num out" id="sumOut">₹0</div></div>
+    <div class="stat"><div class="lbl">Total Received</div><div class="num in" id="sumIn">₹0</div></div>
+    <div class="stat balance"><div class="lbl">Balance</div><div class="num" id="sumBal">₹0</div></div>
+  </section>
+
+  <section class="card miccard">
+    <div class="caption" id="caption">Tap and say it — <span class="hl">“sent 500 to Ravi”.</span></div>
+    <div class="heard" id="heard"></div>
+    <button class="mic" id="micBtn" aria-label="Start listening">
+      <svg viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5"/></svg>
+    </button>
+    <div class="hint" id="hint">Tap the mic to speak</div>
+  </section>
+
+  <section class="card confirm" id="confirmCard">
+    <div class="crow">
+      <label>Direction</label>
+      <div class="seg">
+        <button data-d="out" id="segOut">Sent</button>
+        <button data-d="in" id="segIn">Received</button>
+      </div>
+    </div>
+    <div class="crow"><label>Amount</label><input id="fAmount" inputmode="decimal"></div>
+    <div class="crow"><label>Person</label><input id="fPerson" placeholder="—"></div>
+    <div class="crow"><label>Category</label><input id="fCat" placeholder="—"></div>
+    <div class="crow"><label>Date</label><input id="fDate" readonly></div>
+    <div class="suggest" id="suggest"></div>
+    <div class="actions">
+      <button class="btn g" id="cancelBtn">Cancel</button>
+      <button class="btn p" id="confirmBtn">Confirm</button>
+    </div>
+  </section>
+
+  <div class="typerow">
+    <input id="textIn" placeholder="or type it — sent 500 to Ravi">
+    <button id="sendBtn">Log</button>
+  </div>
+
+  <section class="card cats" id="catCard" hidden>
+    <h2>Spent by category <span id="catScope">· this month</span></h2>
+    <div id="catBars"></div>
+  </section>
+
+  <section class="card list">
+    <div class="listhead">
+      <h2 id="listTitle">History</h2>
+      <div class="tools">
+        <button class="chip" id="sortBtn">Recent</button>
+        <button class="chip" id="csvBtn">CSV</button>
+      </div>
+    </div>
+    <div class="filterbar" id="filterBar"></div>
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <div class="foot">Everything stays on this device · no account, no cloud<br>Works offline · Add to Home Screen for an app icon</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* Engada Pochu — voice grammar engine (pure functions, no DOM) */
+const WORDS = {
+  zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
+  eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,
+  eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,
+  eighty:80,ninety:90,
+  // Hinglish
+  ek:1,do:2,teen:3,char:4,chaar:4,paanch:5,panch:5,chhe:6,che:6,saat:7,aath:8,nau:9,das:10,
+  pandrah:15,bees:20,pacchis:25,tees:30,pachas:50,pachaas:50,sau:100,hazaar:1000,hazar:1000,
+  hazaar:1000,lakh:100000,hundred:100,thousand:1000
+};
+const MULT = {k:1000};
+
+const CATS = {
+  petrol:'Petrol',fuel:'Petrol',diesel:'Petrol',petrolpump:'Petrol',
+  groceries:'Groceries',grocery:'Groceries',kirana:'Groceries',vegetables:'Groceries',
+  food:'Food',lunch:'Food',dinner:'Food',breakfast:'Food',snacks:'Food',restaurant:'Food',
+  coffee:'Coffee',chai:'Coffee',tea:'Coffee',
+  rent:'Rent',electricity:'Bills',bill:'Bills',bills:'Bills',recharge:'Recharge',mobile:'Recharge',
+  internet:'Bills',wifi:'Bills',water:'Bills',gas:'Bills',
+  travel:'Travel',cab:'Travel',uber:'Travel',auto:'Travel',bus:'Travel',train:'Travel',flight:'Travel',
+  medicine:'Health',medical:'Health',doctor:'Health',pharmacy:'Health',gym:'Health',
+  clothes:'Shopping',shopping:'Shopping',shoes:'Shopping',electronics:'Shopping',
+  movie:'Fun',movies:'Fun',game:'Fun',party:'Fun',gift:'Gift',donation:'Gift',
+  petrolbill:'Petrol',tuition:'Education',books:'Education',course:'Education',education:'Education'
+};
+
+const OUT = ['sent','send','paid','pay','gave','give','spent','spend','transferred','transfer',
+  'debited','gone','went','gaveback','lent','bought','buy','outgoing','out'];
+const IN = ['received','receive','got','get','collected','collect','came','credited','earned',
+  'income','repaid','returned','refund','refunded','incoming','gotback',"receivedfrom"];
+const QUERY = ['balance','howmuch','total','last','recent','show','list','sort','filter',
+  'above','below','report','summary','spend','spent','sent','received','when'];
+const FILLER = ['rupees','rupee','rs','inr','rupaye','only','the','a','an','of','my','i','me','along','amount','for'];
+
+function strip(t){
+  return (t||'').toLowerCase()
+    .replace(/[₹$]/g,' ')
+    .replace(/(\d),(?=\d)/g,'$1')
+    .replace(/[^a-z0-9.\s]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function title(s){
+  return (s||'').split(' ').filter(Boolean)
+    .map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');
+}
+
+/* ---- amount ---- */
+function parseAmount(t){
+  const raw = strip(t);
+  // numeral with k / thousand multiplier
+  let m = raw.match(/(\d+(?:\.\d+)?)\s*(k|thousand|hazaar|hazar|lakh)?/);
+  if(m){
+    let n = parseFloat(m[1]);
+    const mult = m[2];
+    if(mult==='k'||mult==='thousand'||mult==='hazaar'||mult==='hazar') n*=1000;
+    if(mult==='lakh') n*=100000;
+    if(n>0) return Math.round(n);
+  }
+  // words
+  const toks = raw.split(' ');
+  let total=0,current=0,found=false;
+  for(const tk of toks){
+    const v = (tk in WORDS) ? WORDS[tk] : (tk in MULT ? MULT[tk] : null);
+    if(v===null) continue;
+    found=true;
+    if(v>=100){ if(current===0) current=1; current*=v;
+      if(v>=1000){ total+=current; current=0; } }
+    else current+=v;
+  }
+  const sum = total+current;
+  return found && sum>0 ? sum : null;
+}
+
+/* ---- direction ---- */
+function parseDir(t){
+  const toks = strip(t).split(' ');
+  const hasIn  = toks.some(x=>IN.includes(x));
+  const hasOut = toks.some(x=>OUT.includes(x));
+  if(hasIn && hasOut){
+    const iIn=toks.findIndex(x=>IN.includes(x)), iOut=toks.findIndex(x=>OUT.includes(x));
+    return iIn<iOut?'in':'out';
+  }
+  if(hasIn) return 'in';
+  if(hasOut) return 'out';
+  return 'out';
+}
+
+/* ---- person + category ---- */
+function parsePerson(t, known){
+  const raw = strip(t);
+  const toks = raw.split(' ');
+  const verbs = OUT.concat(IN);
+  let cand=null;
+  for(let i=0;i<toks.length-1;i++){
+    if(toks[i]==='to'||toks[i]==='from'||toks[i]==='by'){
+      const rest=[];
+      for(let j=i+1;j<toks.length;j++){
+        if(verbs.includes(toks[j])||toks[j]==='for') break;
+        if(/\d/.test(toks[j])) break;
+        if(MULT[toks[j]]||WORDS[toks[j]]!==undefined) break;
+        rest.push(toks[j]);
+        if(rest.length>=2) break;
+      }
+      if(rest.length){ cand=rest.join(' '); break; }
+    }
+    if(toks[i]==='paid'&&i+1<toks.length&&toks[i+1]==='me'){ cand=null; }
+  }
+  if(!cand){
+    const stop = ['the','a','an','of','my','i','me','again','back','only','rupees','rupee','rs','inr','and','then','his','her','them'];
+    const first = toks.find(t=>t && !stop.includes(t) && !verbs.includes(t) && !(t in WORDS) && !(t in MULT) && !/\d/.test(t));
+    if(first && known.some(k=>k.toLowerCase()===first)) cand = first;
+  }
+  if(!cand) return {person:'',match:null};
+  const clean = title(cand.replace(/\b(rupees?|only)\b/g,'').trim());
+  const match = fuzzyName(clean, known);
+  return {person:clean, match};
+}
+function lev(a,b){
+  a=a.toLowerCase(); b=b.toLowerCase();
+  const d=Array.from({length:a.length+1},(_,i)=>[i]);
+  for(let j=0;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+function fuzzyName(name, known){
+  if(!name||!known||!known.length) return null;
+  let best=null,bd=99;
+  for(const k of known){
+    const d=lev(name,k);
+    if(d<bd){bd=d;best=k}
+  }
+  const maxd = bd<=2 ? Math.max(1,Math.floor(name.length/3)+1) : 0;
+  return (best && bd>0 && bd<=maxd) ? best : null;
+}
+function parseCat(t){
+  const raw = strip(t);
+  const m = raw.match(/\b(?:for|on)\s+([a-z]+)/);
+  if(m && CATS[m[1]]) return CATS[m[1]];
+  for(const tk of raw.split(' ')) if(CATS[tk]) return CATS[tk];
+  return '';
+}
+
+/* ---- date ---- */
+const DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+function parseDate(t, base){
+  const raw = strip(t);
+  const now = base?new Date(base):new Date();
+  const d = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(/\byesterday\b/.test(raw)){ d.setDate(d.getDate()-1); return {date:d,label:'Yesterday'}; }
+  if(/\bday before\b/.test(raw)){ d.setDate(d.getDate()-2); return {date:d,label:'2 days ago'}; }
+  const dw = raw.match(/\blast\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+  if(dw){
+    const want=DAYS.indexOf(dw[1]);
+    let diff=(d.getDay()-want+7)%7; if(diff===0) diff=7;
+    d.setDate(d.getDate()-diff);
+    return {date:d,label:title(dw[1])+' (last)'};
+  }
+  const od = raw.match(/\bon the (\d{1,2})(?:st|nd|rd|th)?\b/);
+  if(od){ d.setDate(parseInt(od[1],10)); return {date:d,label:'Day '+od[1]}; }
+  return {date:d,label:'Today'};
+}
+
+/* ---- main utterance parse ---- */
+function parseUtterance(text, ctx){
+  ctx = ctx||{};
+  const known = ctx.known||[];
+  const raw = strip(text);
+  if(!raw) return {kind:'none'};
+  const amount = parseAmount(text);
+  const date = parseDate(text, ctx.now);
+  const dir  = parseDir(text);
+
+  // commands
+  if(/^(undo|delete last entry|delete last|cancel that|remove last|last one)/.test(raw) ||
+     /\b(undo|delete last entry|delete the last|remove last entry)\b/.test(raw))
+    return {kind:'command',command:'undo'};
+  if(/^(balance|what'?s my balance|my balance|show balance|how much do i have)/.test(raw) ||
+     (/\bbalance\b/.test(raw) && !amount))
+    return {kind:'command',command:'balance'};
+  if(/\b(last entry|last transaction|what did i just)\b/.test(raw) && !amount)
+    return {kind:'command',command:'last'};
+  if(/\b(sort|order)\b/.test(raw))
+    return {kind:'command',command:'sort',by:/\bamount\b/.test(raw)?'amount':'date'};
+  const above = raw.match(/\b(above|over|more than|greater than)\s+([a-z0-9.]+)(\s*(k|thousand))?/);
+  if(above){
+    const v = parseAmount(above[2]+' '+(above[4]||''));
+    if(v) return {kind:'command',command:'filter',filter:{type:'min',value:v}};
+  }
+  const below = raw.match(/\b(below|under|less than)\s+([a-z0-9.]+)(\s*(k|thousand))?/);
+  if(below){
+    const v = parseAmount(below[2]+' '+(below[4]||''));
+    if(v) return {kind:'command',command:'filter',filter:{type:'max',value:v}};
+  }
+  if(/\b(clear filter|remove filter|reset|show all|all entries)\b/.test(raw))
+    return {kind:'command',command:'filter',filter:null};
+  if(/\b(show|filter)\b/.test(raw) && known.length){
+    const hit = known.find(k=>raw.includes(k.toLowerCase()));
+    if(hit) return {kind:'command',command:'filter',filter:{type:'person',value:hit}};
+  }
+  if(/\bhow much did i (send|pay|receive|get)\b/.test(raw)){
+    const hit = known.find(k=>raw.includes(k.toLowerCase()));
+    if(hit) return {kind:'command',command:'person',person:hit};
+  }
+  if(/\b(this month|month total|total this month|monthly|report|summary)\b/.test(raw) && !amount)
+    return {kind:'command',command:'month'};
+  if(/\b(category|categories|spent by|where did my money)\b/.test(raw) && !amount)
+    return {kind:'command',command:'categories'};
+  if(/\bhow much\b/.test(raw) && !amount)
+    return {kind:'command',command:'month'};
+
+  // entry
+  if(amount){
+    const p = parsePerson(text, known);
+    const cat = parseCat(text);
+    let dirFinal = dir, person = p.person;
+    if(/\bpaid me\b|\bpaid me back\b/.test(raw) && person==='') { dirFinal='in'; }
+    if(new RegExp('\\b(from)\\b').test(raw)) dirFinal='in';
+    return {
+      kind:'entry', direction:dirFinal, amount, person, match:p.match,
+      category:cat, date:date.date, dateLabel:date.label, raw:text.trim()
+    };
+  }
+  return {kind:'unknown'};
+}
+
+function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function inMonth(iso, d){ return (iso||'').slice(0,7)===monthKey(d); }
+
+
+/* Engada Pochu — UI layer */
+const $ = s => document.querySelector(s);
+const KEY = 'voice-ledger-v1';
+
+let state = {
+  entries: [],
+  sort: 'date',
+  filter: null,
+  speaking: false,
+  pending: null,
+  seeded: false
+};
+
+/* ---------- storage ---------- */
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const d = JSON.parse(raw); state.entries = d.entries||[]; state.sort = d.sort||'date'; }
+    else seed();
+  }catch(e){ seed(); }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify({entries:state.entries, sort:state.sort})); }catch(e){}
+}
+function seed(){
+  const t = new Date();
+  const daysAgo = n => { const d = new Date(t.getFullYear(),t.getMonth(),t.getDate()); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+  state.entries = [
+    {id:1,direction:'out',amount:500,person:'Ravi',category:'',date:daysAgo(0),ts:Date.now()-1000*60*4},
+    {id:2,direction:'in',amount:300,person:'Priya',category:'',date:daysAgo(1),ts:Date.now()-1000*60*60*26},
+    {id:3,direction:'out',amount:250,person:'',category:'Petrol',date:daysAgo(2),ts:Date.now()-1000*60*60*50},
+    {id:4,direction:'out',amount:1200,person:'',category:'Groceries',date:daysAgo(4),ts:Date.now()-1000*60*60*100},
+    {id:5,direction:'in',amount:2000,person:'Ravi',category:'',date:daysAgo(6),ts:Date.now()-1000*60*60*150}
+  ];
+  state.seeded = true;
+  save();
+}
+
+/* ---------- helpers ---------- */
+const money = n => '₹' + Number(n||0).toLocaleString('en-IN');
+const people = () => [...new Set(state.entries.map(e=>e.person).filter(Boolean))];
+function relDate(iso){
+  const t = new Date(); const d = new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const e = new Date(iso+'T00:00:00');
+  const diff = Math.round((d-e)/86400000);
+  if(diff===0) return 'Today';
+  if(diff===1) return 'Yesterday';
+  if(diff>1 && diff<7) return diff+' days ago';
+  return e.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function toast(msg){
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+function say(text){
+  try{
+    if(!window.speechSynthesis || !text) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.98; u.pitch = 1.0; u.volume = 1;
+    const v = speechSynthesis.getVoices().find(x=>/en-IN|en-GB/i.test(x.lang)) ||
+              speechSynthesis.getVoices().find(x=>/^en/i.test(x.lang));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function haptic(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+function caption(html, cls){
+  const c = $('#caption'); c.className = 'caption' + (cls?' '+cls:'');
+  c.innerHTML = html;
+}
+function flash(){
+  const c = $('#summaryCard'); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
+}
+
+/* ---------- render ---------- */
+function totals(){
+  let out=0,inr=0;
+  state.entries.forEach(e => { if(e.direction==='out') out+=Number(e.amount)||0; else inr+=Number(e.amount)||0; });
+  return {out,inr,bal:inr-out};
+}
+function renderSummary(){
+  const t = totals();
+  $('#sumOut').textContent = money(t.out);
+  $('#sumIn').textContent  = money(t.inr);
+  const b = $('#sumBal');
+  b.textContent = (t.bal<0?'−':'') + money(Math.abs(t.bal));
+  b.className = 'num ' + (t.bal<0?'bal-neg':'bal-pos');
+}
+function visible(){
+  let rows = state.entries.slice();
+  const f = state.filter;
+  if(f){
+    if(f.type==='min') rows = rows.filter(e=>Number(e.amount)>=f.value);
+    if(f.type==='max') rows = rows.filter(e=>Number(e.amount)<=f.value);
+    if(f.type==='person') rows = rows.filter(e=>e.person===f.value);
+  }
+  rows.sort((a,b)=> state.sort==='amount'
+    ? Number(b.amount)-Number(a.amount)
+    : (b.date<b.date?-1:b.date>a.date?1:(b.ts||0)-(a.ts||0)));
+  return rows;
+}
+function renderList(){
+  const rows = visible();
+  const el = $('#rows');
+  $('#listTitle').textContent = 'History' + (state.sort==='amount'?' · by amount':'');
+  const fb = $('#filterBar');
+  if(state.filter){
+    const f = state.filter;
+    const txt = f.type==='min' ? 'Above ' + money(f.value)
+              : f.type==='max' ? 'Below ' + money(f.value)
+              : 'From ' + f.value;
+    fb.innerHTML = '<span class="fbadge"><b>'+txt+'</b><span id="clearF">×</span></span>';
+    fb.classList.add('show');
+    fb.querySelector('#clearF').onclick = ()=>{ state.filter=null; renderList(); };
+  } else { fb.innerHTML=''; fb.classList.remove('show'); }
+
+  if(!rows.length){
+    el.innerHTML = '<div class="empty">Nothing here yet.<br>Tap the mic and say it out loud.</div>';
+    return;
+  }
+  el.innerHTML = rows.map((e,i)=>{
+    const dirCls = e.direction==='out'?'out':'in';
+    const sub = [relDate(e.date), e.category||'', e.direction==='out'?'sent':'received'].filter(Boolean).join(' · ');
+    const who = e.person || e.category || 'Unlabelled';
+    const mark = e.direction==='out'?'↑':'↓';
+    return '<div class="row '+dirCls+'" data-id="'+e.id+'"'+(i===0?' style="animation:slide .3s ease"':'')+'>'
+      + '<div class="ico">'+mark+'</div>'
+      + '<div class="mid"><div class="who">'+who+'</div><div class="sub">'+sub+'</div></div>'
+      + '<div class="amt">'+(e.direction==='out'?'−':'+')+money(e.amount)+'</div>'
+      + '<button class="x" data-del="'+e.id+'" title="Delete">✕</button></div>';
+  }).join('');
+  el.querySelectorAll('[data-del]').forEach(b=>{
+    b.onclick = ev => { ev.stopPropagation(); removeEntry(Number(b.dataset.del)); };
+  });
+  el.querySelectorAll('.row').forEach(r=>{
+    r.onclick = ()=> toast('Swipe-free delete: use the ✕ or say “delete last entry”.');
+  });
+}
+function renderCats(){
+  const d = new Date();
+  const rows = state.entries.filter(e=>e.direction==='out' && e.category && inMonth(e.date,d));
+  const map = {};
+  rows.forEach(e=> map[e.category]=(map[e.category]||0)+Number(e.amount));
+  const keys = Object.keys(map).sort((a,b)=>map[b]-map[a]);
+  const card = $('#catCard');
+  if(!keys.length){ card.hidden = true; return; }
+  card.hidden = false;
+  const max = map[keys[0]] || 1;
+  $('#catScope').textContent = '· ' + d.toLocaleDateString('en-GB',{month:'long'});
+  $('#catBars').innerHTML = keys.map(k=>
+    '<div class="cat"><div class="topp"><b>'+k+'</b><i>'+money(map[k])+'</i></div>'
+    + '<div class="bar"><i style="width:'+Math.max(6,Math.round(map[k]/max*100))+'%"></i></div></div>'
+  ).join('');
+}
+function renderAll(){ renderSummary(); renderList(); renderCats(); }
+
+/* ---------- ledger ops ---------- */
+function nextId(){ return state.entries.reduce((m,e)=>Math.max(m,Number(e.id)||0),0)+1; }
+function addEntry(e){
+  e.id = nextId(); e.ts = Date.now();
+  state.entries.push(e); save(); renderAll(); flash();
+  haptic([14,40,14]);
+  return e;
+}
+function removeEntry(id){
+  const i = state.entries.findIndex(e=>Number(e.id)===Number(id));
+  if(i<0) return false;
+  state.entries.splice(i,1); save(); renderAll();
+  return true;
+}
+function lastEntry(){
+  const rows = state.entries.slice().sort((a,b)=>(b.ts||0)-(a.ts||0));
+  return rows[0] || null;
+}
+
+/* ---------- confirm card ---------- */
+function showConfirm(p, opts){
+  state.pending = p;
+  $('#confirmCard').classList.add('show');
+  $('#fAmount').value = p.amount!=null ? p.amount : '';
+  $('#fPerson').value = p.person || '';
+  $('#fCat').value = p.category || '';
+  $('#fDate').value = p.dateLabel || relDate(p.date);
+  $('#fDate').dataset.iso = p.date;
+  setDir(p.direction || 'out');
+  const sg = $('#suggest');
+  if(p.match){
+    sg.style.display = 'block';
+    sg.innerHTML = 'Did you mean <b>'+p.match+'</b>? <button id="useMatch">Use '+p.match+'</button>';
+    sg.querySelector('#useMatch').onclick = ()=>{ $('#fPerson').value = p.match; sg.style.display='none'; };
+  } else { sg.style.display='none'; sg.innerHTML=''; }
+  const d = p.direction==='out' ? 'Sent' : 'Received';
+  caption(d+' <span class="hl">'+money(p.amount)+'</span>'+(p.person?' to/from <span class="hl">'+p.person+'</span>':'')+' — confirm?');
+  $('#heard').textContent = 'he heard: “'+(p.raw||'')+'”';
+  $('#confirmBtn').focus();
+}
+function setDir(d){
+  document.querySelectorAll('.seg button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.d===d);
+  });
+  state.pending && (state.pending.direction = d);
+}
+function hideConfirm(){
+  $('#confirmCard').classList.remove('show');
+  $('#heard').textContent = '';
+  state.pending = null;
+}
+function commitConfirm(){
+  const p = state.pending; if(!p) return;
+  const amt = parseAmount(String($('#fAmount').value)) || Number($('#fAmount').value);
+  if(!amt){ toast('Amount needed.'); return; }
+  const dir = document.querySelector('.seg button.on').dataset.d;
+  const e = addEntry({
+    direction: dir,
+    amount: amt,
+    person: $('#fPerson').value.trim(),
+    category: $('#fCat').value.trim(),
+    date: $('#fDate').dataset.iso || new Date().toISOString().slice(0,10)
+  });
+  hideConfirm();
+  caption('Saved.');
+  haptic(22);
+  const t = totals();
+  say('Saved. ' + (dir==='out'?'Sent ':'Received ') + e.amount + ' rupees' + (e.person?' '+(dir==='out'?'to ':'from ')+e.person:'') + '.');
+  setTimeout(()=>{
+    caption('Tap and say it — <span class="hl">“sent 500 to Ravi”.</span>');
+  }, 2600);
+  toast('Saved ' + money(e.amount) + (e.person? ' · '+e.person : ''));
+}
+
+/* ---------- command runner ---------- */
+function runCommand(c){
+  const now = new Date();
+  if(c.command==='undo'){
+    const l = lastEntry();
+    if(!l){ answer('Nothing to undo.'); return; }
+    removeEntry(l.id);
+    answer('Deleted. ' + money(l.amount) + (l.person?' with '+l.person:'') + '.');
+    return;
+  }
+  if(c.command==='balance'){
+    const t = totals();
+    answer('Your balance is ' + (t.bal<0?'minus ':'') + Math.abs(t.bal) + ' rupees.');
+    return;
+  }
+  if(c.command==='last'){
+    const l = lastEntry();
+    answer(l ? 'Last entry: ' + (l.direction==='out'?'sent ':'received ') + l.amount + ' rupees'
+              + (l.person?' '+(l.direction==='out'?'to ':'from ')+l.person:'') + ', ' + relDate(l.date) + '.'
+            : 'No entries yet.');
+    return;
+  }
+  if(c.command==='month'){
+    const rows = state.entries.filter(e=>inMonth(e.date,now));
+    const out = rows.filter(e=>e.direction==='out').reduce((s,e)=>s+Number(e.amount),0);
+    const inr = rows.filter(e=>e.direction==='in').reduce((s,e)=>s+Number(e.amount),0);
+    const big = rows.slice().sort((a,b)=>b.amount-a.amount)[0];
+    answer(now.toLocaleDateString('en-GB',{month:'long'}) + ': sent ' + out + ', received ' + inr
+      + ', ' + rows.length + ' entries' + (big? ', biggest ' + big.amount + (big.person?' to '+big.person:''):'') + '.');
+    return;
+  }
+  if(c.command==='person'){
+    const rows = state.entries.filter(e=>e.person===c.person);
+    const out = rows.filter(e=>e.direction==='out').reduce((s,e)=>s+Number(e.amount),0);
+    const inr = rows.filter(e=>e.direction==='in').reduce((s,e)=>s+Number(e.amount),0);
+    answer(c.person + ': sent ' + out + ', received ' + inr + '. Net ' + Math.abs(inr-out)
+      + ' ' + (out>inr?'out':'in') + '.');
+    state.filter = {type:'person',value:c.person}; renderList();
+    return;
+  }
+  if(c.command==='categories'){
+    renderCats();
+    const d = new Date();
+    const rows = state.entries.filter(e=>e.direction==='out'&&e.category&&inMonth(e.date,d));
+    const map={}; rows.forEach(e=>map[e.category]=(map[e.category]||0)+Number(e.amount));
+    const top = Object.keys(map).sort((a,b)=>map[b]-map[a]).slice(0,3)
+      .map(k=>k+' '+map[k]).join(', ');
+    answer(top ? 'This month: ' + top + '.' : 'No categorised spending this month.');
+    return;
+  }
+  if(c.command==='sort'){
+    state.sort = c.by==='amount' ? 'amount' : 'date'; save(); renderList();
+    const sb = $('#sortBtn');
+    sb.textContent = state.sort==='amount' ? 'Amount' : 'Recent';
+    sb.classList.toggle('on', state.sort==='amount');
+    answer('Sorted by ' + state.sort + '.');
+    return;
+  }
+  if(c.command==='filter'){
+    state.filter = c.filter; renderList();
+    if(!c.filter) answer('Showing all entries.');
+    else if(c.filter.type==='min') answer('Entries above ' + c.filter.value + '.');
+    else if(c.filter.type==='max') answer('Entries below ' + c.filter.value + '.');
+    else answer('Entries from ' + c.filter.value + '.');
+    return;
+  }
+  answer('I did not catch that.');
+}
+function answer(text){
+  caption(text, 'answer');
+  say(text);
+  setTimeout(()=>{
+    if($('#caption').classList.contains('answer'))
+      caption('Tap and say it — <span class="hl">“sent 500 to Ravi”.</span>');
+  }, 5200);
+}
+
+/* ---------- text / voice input ---------- */
+function handleUtterance(text, viaVoice){
+  const p = parseUtterance(text, {known: people(), now: Date.now()});
+  if(p.kind==='entry'){ showConfirm(p); return; }
+  if(p.kind==='command'){ hideConfirm(); runCommand(p); return; }
+  hideConfirm();
+  caption('I didn’t catch that — try <span class="hl">“sent 500 to Ravi”.</span>');
+  if(viaVoice) say('I did not catch that.');
+}
+function submitText(){
+  const v = $('#textIn').value.trim();
+  if(!v) return;
+  $('#textIn').value = '';
+  handleUtterance(v, false);
+}
+
+/* ---------- speech recognition ---------- */
+let rec = null, listening = false, lastPartial = '';
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+/* Inside a Capacitor Android/iOS shell, WebView has no Web Speech API — use the
+   native plugin (Android SpeechRecognizer) when it is present. */
+const NativeSR = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SpeechRecognition) || null;
+const hasVoice = !!NativeSR || !!SR;
+function nativeStart(){
+  const P = NativeSR; lastPartial = '';
+  P.requestPermissions()
+    .then(()=>P.addListener('partialResults', d=>{
+      lastPartial = (d.matches && d.matches[0]) || lastPartial;
+      if(lastPartial) caption('“'+lastPartial+'”', 'muted');
+    }))
+    .then(()=>{ listening = true; setMic(true, 'Listening…');
+      return P.start({language:'en-IN', maxResults:1, partialResults:true, popup:false}); })
+    .then(res=>{
+      listening = false; setMic(false);
+      const t = (res && res.matches && res.matches[0]) || lastPartial;
+      if(t) handleUtterance(String(t).trim(), true);
+      else caption('I didn’t hear anything.', 'muted');
+    })
+    .catch(()=>{ listening = false; setMic(false);
+      caption('Mic is off. Turn it on in settings.', 'muted');
+      toast('Allow microphone access to speak entries.'); });
+}
+function initSR(){
+  if(!SR) return null;
+  const r = new SR();
+  r.lang = 'en-IN'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+  r.onstart = ()=>{ listening = true; setMic(true, 'Listening…'); };
+  r.onresult = ev => {
+    let interim='', final='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) final += t; else interim += t;
+    }
+    if(interim) caption('“'+interim+'”', 'muted');
+    if(final) handleUtterance(final.trim(), true);
+  };
+  r.onerror = ev => {
+    listening = false; setMic(false);
+    const map = {
+      'not-allowed':'Mic is off. Turn it on in settings.',
+      'no-speech':'I didn’t hear anything.',
+      'audio-capture':'No mic found on this device.',
+      'network':'Speech needs a connection right now.'
+    };
+    caption(map[ev.error] || ('Speech error: '+ev.error), 'muted');
+    if(ev.error==='not-allowed') toast('Allow microphone access to speak entries.');
+  };
+  r.onend = ()=>{ listening = false; setMic(false); };
+  return r;
+}
+function setMic(on, label){
+  const b = $('#micBtn');
+  b.classList.toggle('listening', !!on);
+  b.classList.toggle('busy', false);
+  $('#hint').textContent = on ? (label||'Listening…')
+    : (hasVoice ? 'Tap the mic to speak' : 'Voice not supported here — type below');
+  if(on) caption('Listening… say <span class="hl">“sent 500 to Ravi”.</span>', 'muted');
+}
+function toggleListen(){
+  if(!hasVoice){
+    toast('This browser has no speech input — use the text box.');
+    $('#textIn').focus(); return;
+  }
+  hideConfirm();
+  if(NativeSR){
+    if(listening){ try{ NativeSR.stop(); }catch(e){} listening=false; setMic(false); return; }
+    nativeStart(); return;
+  }
+  if(!rec) rec = initSR();
+  if(listening){ rec.stop(); return; }
+  try{ rec.start(); }catch(e){ try{ rec.stop(); }catch(_){} }
+}
+
+/* ---------- csv ---------- */
+function exportCSV(){
+  const rows = visible();
+  if(!rows.length){ toast('Nothing to export.'); return; }
+  const head = 'date,direction,amount,person,category\n';
+  const body = rows.map(e=>[e.date, e.direction, e.amount, '"'+(e.person||'')+'"', '"'+(e.category||'')+'"'].join(',')).join('\n');
+  const blob = new Blob([head+body], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'voice-ledger.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('CSV exported · ' + rows.length + ' entries');
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  const d = new Date();
+  $('#today').textContent = d.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'});
+  load(); renderAll();
+  $('#sortBtn').textContent = state.sort==='amount' ? 'Amount' : 'Recent';
+  $('#sortBtn').classList.toggle('on', state.sort==='amount');
+
+  $('#micBtn').onclick = toggleListen;
+  $('#sendBtn').onclick = submitText;
+  $('#textIn').addEventListener('keydown', e=>{ if(e.key==='Enter') submitText(); });
+  $('#confirmBtn').onclick = commitConfirm;
+  $('#cancelBtn').onclick = ()=>{ hideConfirm(); caption('Cancelled.'); say('Cancelled.'); haptic(8); };
+  document.querySelectorAll('.seg button').forEach(b=>{ b.onclick = ()=>setDir(b.dataset.d); });
+  $('#sortBtn').onclick = ()=>{
+    state.sort = state.sort==='amount' ? 'date' : 'amount';
+    $('#sortBtn').textContent = state.sort==='amount' ? 'Amount' : 'Recent';
+    $('#sortBtn').classList.toggle('on', state.sort==='amount');
+    save(); renderList();
+  };
+  $('#csvBtn').onclick = exportCSV;
+
+  if(state.seeded) setTimeout(()=>toast('Demo entries loaded — say “delete last entry” to start clean.'), 700);
+  if(!hasVoice) $('#hint').textContent = 'Voice not supported in this browser — type below';
+  caption('Tap and say it — <span class="hl">“sent 500 to Ravi”.</span>');
+  if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>{};
+  window.__VL_READY = true;
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+</script>
+</body>
+</html>

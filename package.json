@@ -1,0 +1,20 @@
+{
+  "name": "engada-pochu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Engada Pochu — hands-free personal expense ledger. Speak a transaction, it is logged.",
+  "scripts": {
+    "sync": "cap sync android",
+    "open": "cap open android",
+    "build:debug": "cap sync android && cd android && ./gradlew assembleDebug",
+    "build:release": "cap sync android && cd android && ./gradlew bundleRelease assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor-community/speech-recognition": "^7.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

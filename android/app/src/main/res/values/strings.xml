@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Engada Pochu</string>
+    <string name="title_activity_main">Engada Pochu</string>
+    <string name="package_name">com.avudaiappan.engadapochu</string>
+    <string name="custom_url_scheme">com.avudaiappan.engadapochu</string>
+</resources>
